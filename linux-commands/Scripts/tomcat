@@ -1,0 +1,57 @@
+#!/bin/bash
+#Script para prover Tomcat como servico (SysVinit)
+
+
+CATALINA_HOME=/opt/apache-tomcat-7.0.39
+TOMCAT_DAEMON=bin/startup.sh
+TOMCAT_STOP=bin/shutdown.sh
+
+get_pid(){
+	ps ax | grep tomcat-7.0.39 | grep -v grep | awk '{print $1}'
+}
+
+start(){
+	if [ -z $PID ] ; then
+		$CATALINA_HOME/$TOMCAT_DAEMON
+	else
+		echo "Tomcat is already running"
+	fi
+}
+
+stop(){
+	if [ -z $PID ] ; then
+		echo "Tomcat is not running yet"
+	else
+		$CATALINA_HOME/$TOMCAT_STOP
+	fi
+}
+
+print_pid(){
+
+	if [ -z $PID ] ; then
+		echo "Tomcat is not running"
+	else
+		echo $PID
+	fi
+}
+
+PID=$(get_pid)
+
+case $1 in
+	start)
+		start
+	;;
+
+	stop)
+		stop
+	;;
+
+	pid)
+		print_pid
+	;;
+
+	*)
+		echo "Tomcat service - start|stop|pid"
+	;;
+esac
+

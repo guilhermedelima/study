@@ -1,0 +1,21 @@
+#!/bin/bash
+
+mem=0
+line=2
+
+for i in $(ps aux | awk 'NR==1{next}{print $4}')
+do
+	aux=$(echo $i | sed 's/\.[0-9]*//g')
+	
+	if [ $aux -gt 3 ] ; then
+		#proc=$(ps aux | awk NR==$line'{s = ""; for (j = 11; j <= 14; j++) s = s $j " "; print s}')
+		proc=$(ps aux | awk NR==$line'{print $11}')
+		echo "Large Process: $proc - Line $line"
+	fi
+
+	mem=$((mem + aux))
+	line=$(($line + 1))
+
+done
+
+echo "TOTAL MEM: $mem"
