@@ -1,0 +1,63 @@
+----------------------- Tabelas ----------------------------------------
+
+-Colunas
+	-Nome
+	-Tipo de Dado
+	-Constrains: not null
+		     Primary Key (pk)
+		     Unique Key (uk)
+		     Foreign Key (pk)
+		     Check
+
+-Constrains
+
+
+
+
+---------------------- DDL (Data definition language) -----------------
+
+
+char: string de tamanho fixo -> Mais rápido
+varchar: string de tamanho variavel
+
+
+-Create
+query:
+	create table escola (
+		id_escola serial primary key,
+		nome_escola varchar(150)
+	);
+
+	create table aluno (
+		id_aluno serial primary key,
+		nome_aluno varchar(150) not null,
+		data_nascimento date,
+		sexo char(1) check in ('M','F'),
+		cpf char(11) unique,
+		id_escola int reference escola (id_escola)
+	);
+
+query:
+	create table hr.escola (
+		id_escola serial primary key,
+		nome_escola varchar(150)
+	);
+
+	create table hr.aluno (
+		id_aluno serial,
+		nome_aluno varchar(150),
+		data_nascimento date,
+		sexo char(1),
+		cpf char(11),
+		id_escola int,
+		constraint pk_aluno primary key (id_aluno),
+		constraint ck_sexo check (sexo in ('M','F')),
+		constraint uk_cpf unique (cpf),
+		constraint fk_escola foreign key (id_escola) references escola (id_escola)
+	);
+
+query:
+	create table hr.locations_teste as
+	select location_id, street_address, city
+	from hr.locations 
+	where location_id > 2400;

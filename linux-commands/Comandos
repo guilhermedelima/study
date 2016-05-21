@@ -49,7 +49,6 @@ sudo dd if=/home/guilherme/Desktop/pendrive/archlinux-2015.04.01-dual.iso of=/de
 cdrecord -v -f=16m speed=16 dev=/dev/hdc -data nomedaiso.iso
 
 
-
 Kernel
 -----------------
 
@@ -244,23 +243,38 @@ POSTGRESQL
 ----------
 
 #Instalar Postgresql
-yum install postgresql-server
+pacman -S postgresql
 
-#Alterar postgresql.conf - Descomentar linhas:
-listen_addresses = 'localhost'
-port = 5432
+#Alterar senha do usuário Linux postgres [postgres]
+passwd postgres
 
-#Alterar pg_hba.conf - Verificar se método de autenticação é o md5:
-# IPv4 local connections:
-host    all             all             127.0.0.1/32            md5
+#Criar Database
+su postgres
+initdb --locale $LANG -E UTF8 -D '/var/lib/postgres/data/'
 
-#Alterar password do usuário postgres
+#Iniciar postgres
+sudo systemctl start postgresql.service
+
+#Alterar password do usuário postgres [root] do banco
 su postgres
 psql
 alter user postgres with password 'root';
 
+#Liberar postgres para acesso remoto
+#Alterar postgresql.conf - Descomentar linhas:
+listen_addresses = '*'
+port = 5432
+
+#Setar métodos de autenticação do banco ['trust' = sem autenticação, 'md5' = hash do password, 'pam' = autenticação do próprio S.O.]
+#Alterar pg_hba.conf - Verificar se método de autenticação remoto é o md5
+# IPv4 local connections:
+host    all             all             0.0.0.0/0            md5
+
 #Utilizar psql
-psql -h localhost -U postgres -W database
+psql -h <IP_SERVER> -U <USER> -W <DATABASE>
+
+#Instalar pgAdmin
+pacman -S pgadmin3
 
 
 Ubuntu
@@ -457,6 +471,9 @@ Obs: Um arquivo .conf pode ter um ou mais blocos com configurações de rede vá
        2) Nível de segurança (WPA2 - WPA)
        3) Qualidade do Sinal
 
+#Verificar se há algum bloqueio externo desligando wireless (FN + F2)
+rfkill list
+
 
 Modelo SYSTEMD Linux
 --------------------
@@ -586,6 +603,20 @@ pacman -Ql <PACKAGE>
 #Instalar pacote de uma arquivo local
 pacman -U <PACKAGE_FILE>
 
+----------
+
+#Instalar pkgfile para consultar arquivos no repositório remoto
+pacman -S pkgfile
+
+#Verificar pacote que detem determinado arquivo (Parecido com pacman -Qo)
+pkgfile <ARQUIVO>
+
+#Verificar lista de arquivos de um pacote remoto (Parecido com pacman -Ql)
+pkgfile -l <PACOTE>
+
+#Sincronizar pkgfile
+pkgfile -u
+
 
 AUR
 ---
@@ -637,6 +668,11 @@ LC_ALL=C xdg-user-dirs-update
 #Reconhecer touchpad
 pacman -S xf86-input-synaptics
 
+#Desabilitar AMD Radeon [instalar modulo acpi_call]
+pacman -S acpi_call
+modprobe acpi_call
+/usr/share/acpi_call/examples/turn_off_gpu.sh
+
 
 KDE
 ---
@@ -662,3 +698,16 @@ Conflicts=getty@tty1.service
 #Ferramentas
 pacman -S konsole
 pacman -S dolphin dolphin-plugins
+
+
+LibreOffice
+--------------
+
+#Instalar libreOffice
+pacman -S libreoffice-fresh libreoffice-fresh-pt-BR
+
+#Instalar Hunspell pt-br [correção ortográfica]
+packer -S hunspell-pt-br
+
+#Instalar language tool do AUR [correção gramatical]
+packer -S libreoffice-extension-languagetool

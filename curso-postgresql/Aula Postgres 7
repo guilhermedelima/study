@@ -1,0 +1,85 @@
+------------------------------------- DML (Data manipulation language DML) ------------------------------------
+
+- Insert
+- Update
+- Delete
+
+
+Delete
+query:
+	delete from hr.employees where employee_id = 105;
+
+	delete from hr.employees where employee_id in (select employee_id 
+							from hr.employees
+							where department_id = 100);
+
+
+obs:
+cascade - remove linhas de chave primário e todas as linhas que possuem sua foreign key
+restrict - remove linhas apenas se não houver referencia de foreign key
+
+Update
+query:
+	update hr.employees 
+	set salary = salary * 1.1
+	where department_id = 100;
+
+	update hr.employees 
+	set salary = (select max(salary)
+			from hr.employee
+			where department_id = 100),
+	    commission_pct = 0.3
+	where department_id = 100;
+
+	update hr.employees e
+	set salary = 1000, commission_pct = 0.2
+	from hr.departments d
+	where e.department_id = d.department_id
+	and d.department_name = 'Finance';
+
+
+Insert
+
+- Estrutura básica: "insert into hr.employees () values ();"
+- Se omiir os campos os valores em "values" devem seguir a ordem da tabela
+- UTILZAR SEQUENCE PARA INSERIR ID INCREMENTAL
+- A palavra SERIAL é um atalho para o postgresql criar automticamente uma sequence e associar a tabela
+
+obs
+Função Max() -> retorna valor máximo
+
+Insert
+query:
+	insert into hr.employees (first_name, last_name, email, phone_number, hire_date, job_id, salary,
+				  manager_id, department_id)
+	values('Paulo', 'Machado', 'paulo.mac@gmail.com', 43222222, to_date('', 'DD/MM/AAAA'), 'FI_ACCOUNT',
+	 1000, 108, 100)
+	 returning employee_id;
+
+Insert com select
+query:
+	insert into hr.employees_historico 
+	select employee_id, first_name, last_name, email
+	from hr.employees
+
+Create table com insert
+query:
+	create table hr.employees_historico as (select employee_id, first_name, last_name, email
+						from hr.employees);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

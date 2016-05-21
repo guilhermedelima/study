@@ -1,0 +1,89 @@
+------------- Boas Práticas -------------------------
+
+
+- Utilizar a função TO_DATE('0000/00/00', 'YYYY-MM-DD')
+- Melhor performance utilizando este formato (Mantém a utilização de indice)
+- Utilizar a função TO_CHAR(DATA, ...) no SELECT
+
+- Evitar subselect dentro de select (Utilizar JOIN)
+- Uso do Distinct torna a query lenta (Ordena para depois eliminar repetidos)
+- UNION ALL tem performance melhor, já que não elimina repetições
+- ORDER BY em view não é uma boa prática, pois toda vez ele irá ordenar antes de ir para a consulta
+- O uso do like permite a utilização de indices apenas na situação => WHERE NOME LIKE 'PA%'
+- REGEX permite criação de índices
+
+- Comando de insert sempre dizendo tabela e COLUNAS => INSERT INTO TAB (campos) VALUES (.....)
+- Alterar VALUES para SELECT insere uma consulta na tabela
+- Criar índice em foreign key ajuda em performance na hora de deletar campos da outra tabela (Não precisa validar a tabela da fk antes de deletaro registro na tabela original)
+
+- Índices compostos tem performance melhor que dois índices distintos.
+- Evitar consultas dentro de loops
+
+- Utilizar GROUP BY apenas quando se usa funções de agregação (sum, etc)
+
+EXEMPLO - UNION
+
+query:
+	SELECT employee_id, job_id FROM hr.job_history where employee_id = 101
+	Union all
+	select employee_id, job_id from hr.employees  where employee_id = 101;
+
+
+
+----------------------- Consulta Recursiva (hierárquica) --------------------------
+
+
+- Não segue padrão sql, Cada banco implementa seu jeito
+- Estrutura básica:
+
+with recursive fn() {
+
+	Union all
+
+}
+select * from fn
+
+
+query:
+with recursive fn(employee_id, first_name, manager_id) as (
+
+	select employee_id, first_name, manager_id
+	from hr.employees
+	where manager_id is null
+
+	UNION ALL
+
+	select e.employee_id, e.first_name, e.manager_id
+	from fn inner join hr.employees e
+	on fn.employee_id = e.manager_id
+
+)
+
+select * from fn;
+
+query:
+with recursive fn(nivel, employee_id, first_name, manager_id) as (
+
+	select 0 as nivel, employee_id, first_name, manager_id 
+	from hr.employees
+	where manager_id is null
+	Union all
+	select fn.nivel+1, e.employee_id, e.first_name, e.manager_id
+	from fn inner join hr.employees e
+	on fn.employee_id = e.manager_id
+)
+
+select * from fn
+
+
+
+
+
+
+
+
+
+
+
+
+
