@@ -687,7 +687,7 @@ pacman -S sddm
 pacman -S sddm-kcm
 
 #Iniciar sddm em tty1 [Adicionar linha em /etc/sddm.conf]
-[XDisplay]
+[X11]
 MinimumVT=7
 
 #Iniciar console [getty] no tty1, com sddm
@@ -711,3 +711,73 @@ packer -S hunspell-pt-br
 
 #Instalar language tool do AUR [correção gramatical]
 packer -S libreoffice-extension-languagetool
+
+
+Virtual Box
+------------------
+
+#Instalar virtualbox (Escolher pacote com módulos pre compilados ou dkms)
+sudo pacman -S virtualbox
+
+#Baixar iso com guest additions para instalar de dentro da vm
+sudo pacman -S virtualbox-guest-iso
+
+
+Vagrant
+---------------
+
+#Instalar vagrant
+sudo pacman -S vagrant
+
+#Adicionar box do repositório hashicorp [Salva em diretório ~/.vagrant.d]
+vagrant box add <user/box>
+
+#Inicializar uma Box
+mkdir <DIR>
+cd <DIR>
+vagrant init <BOX_NAME>
+
+#Ligar / desligar uma box
+vagrant up
+vagrant halt
+
+#Remover arquivos do virtualbox / vmware
+vagrant destroy
+
+
+Módulos do Kernel
+-------------------------
+
+#Instalar pacote com configurações do kernel
+sudo pacman -S linux-headers
+
+#Trocar branch do fonte do kernel para o kernel em uso
+uname -r
+git checkout v4.7-rc1
+
+#Limpar arquivos gerados e configurações atuais do diretório fonte do kernel
+make clean
+make mrproper
+
+#Copiar configurações atuais para diretório com fonte do kernel
+cp /usr/lib/modules/`uname -r`/build/.config .
+cp /usr/lib/modules/`uname -r`/build/Module.symvers .
+
+#Validar arquivo de configuração do kernel (.config)
+make oldconfig
+
+#Verificar opções habilitadas
+make menuconfig
+
+#Preparar fonte para compilar módulos
+make prepare
+make scripts
+
+#Compilar Módulo
+make -C <DIRETORIO_KERNEL> M=<DIRETORIO_MODULO> modules
+
+#Incluir módulo
+insmod <NOME_MODULO>.ko
+
+#Remover módulo
+rmmod <NOME_MODULO>
