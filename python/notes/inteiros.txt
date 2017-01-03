@@ -1,0 +1,17 @@
+=> Tipos primitivos:
+
+[ Números ]
+
+- int: Inteiro implementado utilizando 'long' do C (Geralmente, 32 bits). 'sys.maxint' informa valor máximo de um inteiro de acordo com a arquitetura. (2**31 - 1) ou (2**63 - 1).
+
+- long: Inteiro com precisão ilimitada. Semelhante a classe BigInteger do Java.
+
+- float: Ponto flutuante implementado com 'double' do C. 'sys.float_info'informa características do float (max, min, etc.)
+
+- complex: Implementação para números complexos. Parte real de uma variável 'var' pode ser acessada com 'var.real', enquanto 'var.imag' acessa parte imaginária.
+
+[ Dicas de Uso ]
+
+- Os construtores int(), long(), float() e complex() podem ser usados para criar números com tipos específicos.
+
+- Operações simples para números reais: math.ceil(), math.floor(), math.trunc(), round()

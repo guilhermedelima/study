@@ -1,0 +1,34 @@
+#Anotações sobre python
+
+=> Python
+	- Linguagem "interpretada" (A implementação do python, ex. CPython, deixa o uso da linguagem "interpretado") ( Script ).
+
+	- Substitui o uso de blocos pela indentação do código, diferente do C++, por exemplo.
+
+	- É uma linguagem fortemente tipada, ou seja, toda variável possui um tipo específico. Entretanto, também é caracterizada como dinamicamente tipada, pois, apesar do interpretador saber qual o tipo de cada variável, nao há restrições de uso dessas variáveis. É responsabilidade do programador garantir o uso correto de variáveis de acordo com o tipo. Caso haja algum erro, o interpretador lança uma exceção.
+
+	- Possui garbage collector para remover objetos que não são mais referenciados por nenhuma variável.
+
+
+[GIL]
+	- Implementação CPython faz uso de um GIL (Global Interpreter Lock), impedindo que duas threads nativas tenham acesso ao interpretador ao mesmo tempo. Portanto, multiplas threads em um sistema multicore serão executadas apenas uma de cada vez, liberando a execução de outra thread apenas quando uma operação de IO acontece. Isso é necessário pois o interpretador CPython faz uso de funções do C que não são thread safe.
+
+	- Para impedir que threads sem operações de IO tomem todo o tempo do interpretador python, é realizado uma operação de check a
+
+* Verificar implementação do interpretador Python
+
+import platform
+platform.python_implementation()
+
+
+
+=> Tipos primitivos:
+
+* Função type() retorna o tipo de um objeto
+
+- Números: int(), long(), float(), complex()
+- Strings: str()
+- Listas: []
+- Tuplas: ()
+- Dicionários: {}
+- Set: set( [] )

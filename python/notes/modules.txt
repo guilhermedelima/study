@@ -1,0 +1,23 @@
+# Módulos
+
+- Um arquivo '.py' com instruções em python é denominado módulo
+
+- Para carregar um módulo utiliza-se o comando 'import <NOME_MODULO>'. 
+
+- Quando um módulo é carregado, todas as instruções do arquivo são executadas pelo interpretador (definições e comandos).
+
+- Ao executar um programa python (e.x. './python2 prog.py'), o interpretador carrega este módulo e atribui a variável __name__ o valor '__main__', indicando que este módulo é o programa principal. Ao carregar um módulo com o comando import, a variável __name__ representa o nome do módulo.
+
+- Para reutilizar funções ou classes definidas em módulos, é últil manter todas as outras instruções em uma única função, a qual se comportaria como uma "main". Abaixo segue o padrão utilizado para se definir a função main de um módulo, executada apenas quando o módulo é carregado como programa principal.
+
+
+#Definições de funções, classes, etc.
+
+#Função main executada apenas quando o módulo é executado como programa principal
+if __name__ == '__main__':
+	print 'Main function'
+
+
+- A função dir() apresenta todos os símbolos (variáveis, funções, etc.) presentes em um módulo. É necessário que o módulo já esteja carregado para consultar estas informações.
+
+- A função help() apresenta uma breve descrição sobre algum módulo, classe ou método, semelhante ao 'man' do linux, porém mais sucinto.
