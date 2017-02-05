@@ -1,0 +1,32 @@
+Decorator
+=========
+
+-> Qualquer objeto que receba como parâmetro uma função e retorne algo (e.x. outra função; um objeto "chamável")
+-> Usado principalmente para adicionar novo comportamento a uma função
+-> Utiliza sintaxe "@decorator" para simplificar "nome_funcao = decorator( nome_funcao )"
+-> Para passar parâmetros para um decorator, é necessário criar uma função, ou objeto, que retorne um decorator:
+
+@uri( "/test.com" )
+def F():
+	pass
+
+-> uri( ... ) deverá retornar um decorator, que por sua vez receberá F() como parâmetro. Sintaxe semelhante a:
+
+F = uri( "/test.com" )( F )
+
+-> A função retornada por um decorator não mantém as variáveis __name__, __doc__ e __module__ da função original.
+Para manter esses parâmetros originais, é necessário decorar a função que será retornada com @funtools.wraps
+
+Obs: Para decorators que são classes, não é possível utilizar esta técnica. Por exemplo:
+
+class decorator:
+	def __init__( self, user_function ):
+		self.f = user_function
+		functools.update_wrapper( self, user_function )
+
+	def __call__( self, *args, **kwargs ):
+		self.f( *args, **kwargs )
+
+Com functools.update_wrapper sendo chamada no __init__ do decorator, os parâmetros __name__ e __doc__ estarão associados
+à instância do decorator. Entretanto, a função help utiliza as variáveis __name__ e __doc__ associadas à classe e não a
+instâncias da mesma. Portanto, para a função help, as variáveis __name__ e __doc__, da função original, não serão utilizadas.

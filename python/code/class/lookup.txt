@@ -1,0 +1,76 @@
+Regras para procurar um atributo
+================================
+
+Object Lookup
+-------------
+
+obj.attr
+
+*) Método __getattribute__ é chamado e procura de acordo com a seguinte ordem:
+   Class.__getattribute__( obj, 'attr' )
+
+
+1) O atributo está em Class e é um data descriptor (implementa __get__ e __set__)?
+   Y: retorna Class.__dict__[ 'attr' ].__get__( obj, Class )
+
+
+2) O atributo está no objeto?
+   Y: retorna obj.__dict__[ 'attr' ]
+
+
+3) O atributo está em Class e é um non data descriptor (implementa apenas __get__)?
+   Y: retorna Class.__dict__[ 'attr' ].__get__( obj, Class )
+
+
+4) O atributo está em Class?
+   Y: retorna Class.__dict__[ 'attr' ]
+
+
+5) O atributo ainda não foi achado?
+   Y: retorna Class.__getattr__( 'attr' ) (Implementação default = raise AttributeError)
+
+
+
+Class Lookup
+------------
+
+Class.attr
+
+*) Método __getattribute__ da Metaclass é chamado e procura de acordo com a seguinte ordem:
+   Metaclass.__getattribute__( Class, 'attr' )
+
+
+1) O atributo está em Metaclass e é um data descriptor (implementa __get__ e __set__)?
+   Y: retorna Metaclass.__dict__[ 'attr' ].__get__( Class, Metaclass )
+
+
+2) O atributo está em Class e é um descriptor qualquer (implementa __get__ e/ou __set__)?
+   Y: retorna Class.__dict__[ 'attr' ].__get__( None, Class )
+
+
+3) O atributo está em Class?
+   Y: retorna Class.__dict__[ 'attr' ]
+
+
+4) O atributo está em Metaclass e é um non data descriptor (implementa apenas __get__)?
+   Y: retorna Metaclass.__dict__[ 'attr' ].__get__( Class, Metaclass )
+
+
+5) O atributo está em Metaclass?
+   Y: retorna Metaclass.__dict__[ 'attr' ]
+
+
+6) O atributo ainda não foi achado?
+   Y: retorna Metaclass.__getattr__( 'attr' ) (Implementação defaul = raise AttributeError)
+
+
+
+Magic Methods Lookup
+--------------------
+
+Funções chamadas "Magic Methods" ( escritos entre '__') são consultadas diretamente na classe a qual o objeto pertence, ou seja, são acessados
+diretamente aos slots.
+
+Ex. obj1 < obj2
+	-> Implicitamente isso será convertido para obj1.__lt__( obj2 ). Porém o acesso ao métod __lt__ não será feito pelo método __getattribute__
+	   e sim diretamente ao slot da classe type( obj1 ).

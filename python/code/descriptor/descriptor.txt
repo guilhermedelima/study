@@ -1,0 +1,55 @@
+Descriptor
+==========
+
+-> Adiciona "bind behaviour" a um objeto (Permite utilizá-lo com sintaxe parecida de um atributo comum).
+
+-> O Objetivo de um descriptor é pertencer a uma classe qualquer e, toda vez que for chamado como variável, executar comportamentos diferentes às
+   operações de get, set e del. Portanto, a classe passará a responsabilidade de evaluações e atribuições para o descriptor.
+   E.x. Considere o código abaixo:
+
+   class my_descriptor():
+   	... ( __get__, __set__, __del__)
+
+   class base():
+   	val = my_descritor() 
+
+   Toda vez que o atributo val for usado (e.x. base.val; base.val={}; b_obj.val; b_obj.val={}, ), o descriptor executará os métodos __get__, __set__,
+   sobrescrevendo o comportamento default de atribuições e evaluações.
+
+-> Pode ser utilizado apenas em classes que seguem o new style object ( __builtins__.object ).
+
+-> Por se tratar de uma alteração no comportamento da classe, um descriptor deve ser instanciado no escopo da classe que o utiliza, e não no escopo das
+   instancias (__init__).
+
+-> Um descriptor precisa implementar pelo menos um dos métodos abaixo:
+	1) __get__( self, instance, owner ) -> retornar algum objeto ou lançar AttributeError
+	2) __set__( self, instance, value ) -> retornar None
+	3) __delete__( self, instance ) -> retornar None
+
+  Obs: Explicando os argumentos:
+  	* self: É a instância do próprio descriptor ( e.x. my_descriptor object ).
+	* instance: instância da classe que possui o descriptor ( e.x. b_obj )
+	* owner: tipo da instância que utiliza o descriptor( e.x. base )
+
+-> Quando não implementa os três métodos, um descriptor pode ser classificado como:
+	1) Data descriptor: caso implemente __get__ e __set__.
+	2) Non Data descriptor: caso implemente apenas __get__.
+
+
+Detalhes:
+-> Quando um atributo de um objeto (new style) é invocado, como "obj.attr", o python invoca o método __getattribute__, o qual busca na variável
+   __dict__ de acordo com a seguinte ordem:
+	1) procura por obj.__dict__[ 'attr' ] (Atributo da instância)
+	2) procura por type( obj ).__dict__[ 'attr' ] (Atributo da classe)
+	3) procura pelo atributo em todas as superclasses
+
+-> Caso o atributo achado no escopo das classes seja um descriptor, ao invés de apenas retornar o atributo, o método __get__, __set__ ou __delete__ será
+   chamado.
+
+   1) Quando chamado por um objeto, como "b_obj.val", o método __getattribute__ transforma "b_obj.val" em "type(b_obj).__dict__[ 'val' ].__get__( b_obj, type(b_obj) )".
+      Ou seja, em __get__, "instance" será "b_obj" e "owner" será "base".
+
+   2) Quando chamado pela classe, como "base.val", o método __getattribute__ transforma "base.val" em "base.__dict__[ 'val' ].__get__( None, base )".
+      Ou seja, em __get__, "instance" será "None" e "owner" será "base".
+
+   3) Os métodos __set__ e __delete__ serão chamados apenas quando invocados por instâncias da classe que possui o descriptor (e.x. b_obj.val = {} ).

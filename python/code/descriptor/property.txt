@@ -1,0 +1,28 @@
+Property
+========
+
+-> Descriptor que torna possível acessar funções de getter e setter e deleter com sintaxe de atributo comum.
+-> Permite o encapsulamento de acesso à variáveis privadas através dos métodos de getter, setter e deleter.
+-> Também é um decorator, pois recebe funções como parâmetro
+
+-> Dicas para definir uma propriedade:
+	1) definir no __init__ atributo privado com prefixo '_' (e.x. '_name').
+	2) definir funções de getter, setter (opcional) e deleter (opcional).
+	3) criar property (escopo da classe) com nome da variável privada desejada sem o prefixo '_' (e.x. 'name')
+
+   Obs: Geralmente, utiliza-se sintaxe de decorator para instanciar o atributo property
+
+Exemplo:
+
+class person( object ):
+	
+	def __init__( self, name ):
+		self._name = name
+
+	def get_name( self ):
+		return self._name
+
+	def set_name( self, name ):
+		self._name = value
+
+	name = property( get_name, set_name )

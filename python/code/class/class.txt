@@ -1,0 +1,151 @@
+Class
+=====
+
+-> Possuem atributos e definições de métodos, no qual são criados dentro de um novo namespace
+-> Sintaxe:
+# class ClassName:
+#
+# 	# Criação de atributos estáticos
+#	x = 10
+#
+#	# Definição de métodos (Primeiro parâmetro é a instância do objeto)
+#	def method( self ):
+#		pass
+
+-> Após executar a definição de uma classe, um class object é criado, o qual contém todas os atributos na variável "__dict__". A definição de uma
+   classe também pode ser criada utilizando a função type( class_name, superclasses_tuple, dict ), a qual retorna um class object (new style). No
+   exemplo abaixo, será criada uma classe que herda de object e possui a variáveil estática 'Name'.
+-> Sintaxe:
+# Person = type( 'Person', (object,), { 'Name' : 'Static Name for all Person' } )
+
+-> Os atributos de classe / instâncias são dinâmicos, ou seja, podem ser adicionados ou removidos após sua definição.
+-> Todos os atributos de classe / instância são públicos. Para sugerir que um atributo é privado e não deve ser usado, utiliza-se a convenção de
+   um underscore antes do nome.
+-> Classes permitem duas operações: utilização de atributos (variáveis e métodos) e instânciação (criação de objetos).
+
+
+Instâncias
+==========
+
+-> A criação / destruição de instâncias de uma classe ocorre com a utilização de dois métodos:
+	1) __new__: Método default do python que cria o objeto na memória e o retorna.
+	2) __init__: Método invocado logo após a criação da instância com objetivo de customizar o objeto.
+	3) __del__: Método chamado quando um objeto não é mais referenciado e o garbage collector irá removê-lo. Equivalente ao destrutor na linguagem C++.
+
+-> Os atributos da instância são armazenados na variável __dict__ do próprio objeto.
+-> Todas as funções definidas em uma classe são transformadas em métodos (bound method), ou seja, apenas podem ser chamadas por instâncias. O primeiro
+   parâmetro de um método é a própria instância "self" (explícito é melhor que implícito).
+   Portanto, "obj.method()" é convertido para "Class.method( obj )"
+-> Todos os métodos de uma classe são virtuais.
+
+   Obs: A passagem automática do parâmetro self é possível devido ao fato de toda função ser um objeto descriptor (__get__), além de ser callable (__call__).
+        Quando uma função de uma classe é invocada, o método __getattribute__ percebe que o atributo requisitado é um descriptor. Portanto, ao invés de apenas
+	retornar a função, o método __get__ da classe "function" é chamado, o qual recebe como argumento o objeto e a classe que o invocou. Em seguida, o __get__
+	devolve um novo objeto chamado "bound function", o qual associa a função original ao objeto que o invocou. Dessa forma, o parâmetro self está empacotado
+	nesta nova função ("bound method").
+	Caso uma função seja chamada pelo escopo da classe, ao invés de ser criada uma "bound function", será criada uma "unbound function", pois o parâmetro "obj"
+	do método __get__ será "None". Para "unbound method" é verificado se o primeiro argumento é uma instância da classe. Caso seja, o método é executado.
+
+	E.x.
+	ClassName.__dict__[ 'method' ]  -> 'Função original'
+	ClassName.method 		-> 'Unbound Function' ( Resultado de ClassName.__dict__[ 'method' ].__get__( None, ClassName ) )
+	obj.method			-> 'Bound Function'   ( Resultado de ClassName.__dict__[ 'method' ].__get__( obj, Classname ) )
+
+	Para criar funções que possam ser chamadas pelo escopo da classe, é necessário usar o descriptor "staticmethod".
+
+	* Para python 3, este conceito de unbounded method foi retirado da linguagem. O método __get__ sempre retorna bounded method ou a função original.
+
+	E.x.
+	ClassName.__dict__[ 'method' ]  -> 'Função original'
+	ClassName.method 		-> 'Função original' ( Resultado de ClassName.__dict__[ 'method' ].__get__( None, ClassName ) )
+	obj.method			-> 'Bound Function'  ( Resultado de ClassName.__dict__[ 'method' ].__get__( obj, Classname ) )
+
+
+Herança
+=======
+
+-> Python permite a utilização de herança múltipla.
+-> Sintaxe:
+# class ClassName( BaseClass1, BaseClass2, ... ):
+# 	pass
+
+-> O acesso a um atributo de classe consiste em buscá-lo na variável __dict__ da classe. Caso não seja encontrado, a busca pelo atributo continua
+   nas superclasses até ser encontrado pela primeira vez, de acordo com a ordem em que as superclasses foram definidas. Esta resolução de nomes é
+   chamada de MRO (Method Resolution Order) e possui algoritmos diferentes dependendo também do tipo da class (old style x new style).
+
+  1) Classes old style buscam pelos nomes realizando uma DFS. Isso pode gerar problemas em heranças múltiplas (Diamond problem).
+  2) Classes new style buscam pelos nomes utilizando um algoritmo C3, o qual apresenta uma resolução mais concisa.
+
+  Obs: Em classes new style, é possível consultar a ordem de busca MRO com o método mro(), ou acessando a variável __mro__ no escopo da classe.
+
+
+*) Super
+
+-> A função super pode ser utilizada para acessar métodos de superclasses de acordo com a regra MRO.
+-> Quando utilizada, retorna-se um objeto semelhante ao original (proxy object). A diferença é que ao ser requisitado um atributo, apenas pula-se a classe
+   atual no momento de percorrer a lista definida pela MRO.
+-> Permite um código mais limpo, pois não é necessário especificar diretamente a classe do método da superclasse, apenas delega-se a responsabilidade
+   para a próxima classe na lista.
+-> Sintaxe:
+# class base( object ):
+# 	def F( self ):
+#		print 'Base F'
+#
+# class derived( object ):
+#	def F( self ):
+#		super( base, self ).F()
+#		print 'Derived F'
+
+*) super( klass, obj ) - [Usado em métodos invocados por instâncias]
+	- klass: Classe original
+	- obj: objeto self que será passado como primeiro argumento.
+
+*) super( klass, classObj ) - [Usado para invocar super dentro de um classmethod]
+	- klass: Classe original
+	- classObj: objeto que também representa a classe original e será passado como primeiro argumento.
+
+	Obs: Em python 3 é possível chamar "super()", onde implícitamente equivale a super( klass, <primeiro argumento da função> ).
+
+
+-> Quando uma subclasse invoca um método explicitamente ( "Base.method(self)" ), o código fica estático, ou seja, sempre irá chamar o método específico na
+   superclasse.
+   Utilizando "super" ( super().method() ), a decisão de qual método será executado depende do MRO do classe, ou seja, a escolha pode variar dependendo da
+   lista de superclasses. Isso ajuda a, por exemplo, chamar todos os métodos __init__ para herança múltipla.
+
+       A
+     /   \
+    B     C
+      \ / 
+       D
+
+   super().__init__() implementado em todas as classes:
+   D -> B -> C -> A
+
+   BaseClass.__init__() implementado em todas as classes:
+   D -> B -> A > C -> A
+
+
+Abstract Class
+==============
+
+-> Em python não há o conceito de classe abstrata/interface, apenas ducktyping. portanto, foram criadas metaclasses e decorators para permitir que
+   subclasses sejam forçadas a implementar determinadas operações.
+-> Para definir uma classe abstrata / interface em python, a classe deve ter abc.ABCMeta como metaclasse e decorar os métodos "virtuais puros" com
+   abc.abstractmethod
+
+
+Static Method / Class Method
+============================
+
+-> Em python, também não há o conceito de métodos estáticos, como em C++ e Java. A invocação de métodos é baseada em bounded e unbounded (*Em python3,
+   retorna-se apenas a função pura) methods.
+-> Foram criados descriptors que simulam o comportamento de métodos estáticos. Para utilizá-los, basta decorar o método desejado com um dos seguintes
+   descroptors:
+	1) staticmethod: Não recebe nenhum argumento implícito. O escopo do método estático não tem acesso a nenhum item da classe.
+	2) classmethod: Recebe como argumento implícito a classe em que foi definida. 
+
+-> A implementação de ambos descritors está concentrada apenas no método __get__( self, obj, klass ). Para staticmethod, retorna-se apenas a função
+   original, ignorando obj (objeto que o invocou, caso seja chamado por uma instância) e klass (classe que invocou o método). Já para classmethod,
+   ignora-se obj, porém utiliza-se o parâmetro klass como primeiro argumento da função original.
+-> A principal diferença de um classmethod para métodos estáticos em C++ e Java é a possibilidade de usar 'polimorfismo' neste cenário. Portanto,
+   é possível usar o objeto super() para acessar métodos de superclasses dentro de um classmethod.

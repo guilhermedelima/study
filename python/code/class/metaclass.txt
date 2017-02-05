@@ -1,0 +1,95 @@
+Metaclass
+=========
+
+-> Metaclasse pode ser definida como a classe das classes (class objects), pois classes em python também são objects.
+   type( str ) -> <class 'type'>
+-> Uma metaclasse é uma instância dela mesmo (weird). type é utilizada como metaclass default.
+   Obs: A implementação de type não é possível em python puro, pois type é uma classe que é uma instância dela mesmo.
+-> Metaclasses são responsáveis por 'construir' outras classes. Portanto, podem ser utilizadas para adicionar customizaçãoes durante 
+   a criação de classes comuns (class objects).
+
+   E.x.:
+   *) abc.ABCMeta: Metaclasse utilizada para criar classes abstratas (não podem ser instânciadas)
+   *) Django: Utiliza metaclasses para adicionar mapeamento ORM em classes simples (models.Model).
+
+-> Quando uma classe em python é definida, os métodos "metaclass.__new__" e "metaclass.__init__" podem ser utilizadados para construir e customizar,
+   respectivamente, o class object a ser retornado.
+-> Quando uma classe instancia um objeto, e.x. "obj = base()", o método "metaclass.__call__" da metaclasse será chamado e irá criar e customizar
+   a instância da classe utilizando os métodos "base.__new__" e "base.__init__", respectivamente.
+   Obs: Uma classe é instância de uma metaclasse, portanto o método "metaclass.__call__" torna o class object chamável, ou seja, o functor do class object
+   é responsável por instanciar objetos da classe.
+-> A metaclass de uma classe pode ser informada atribuindo a variável '__metaclass__', ou passando o parâmetro 'metaclass=mymeta' após a lista de super
+   classes na definição.
+
+-> Quando uma classe é definida, os seguintes passos são executados:
+		
+	1) O namespace da classe é preparado
+		- A função metaclass.__prepare__ retorna um dict que será usado como namespace da classe.
+		  namespace = metaclass.__prepare__(name, bases, **kwds)
+
+	2) As instruções do corpo da classe são executadas com o comando exec
+		- exec(body, globals(), namespace)
+		- Dentro de uma definição do método, não se tem acesso direto ao namespace na classe.
+		- Atribuições e consultas a atributos no código da classe serão através do namespace.
+		  Ex:
+		  # Class base:
+		  #	# Resulta em namespace[ 'x' ] = 10
+		  # 	x = 10
+		  
+	3) A metaclass é identificada
+		- Se __metaclass__ for definida dentro da classe, ela será utilizada.
+		- Se __metaclass__ for definida como variável global, todas as classes do módulo a utilizarão
+		- Caso não esteja definido a variável __metaclass__, a classe type é utilizada
+
+	4) O class object é criado.
+		- 'type()' ou 'metaclass()' será chamado para criar o class object, recebendo como parâmetro: nome da classe, lista de 
+		   super classes e namespace.
+		   Obs: metaclass precisa ser apenas algo callable
+		   Obs: métodos
+		- variavel __dict__ representa o namespace da classe.
+
+
+
+------
+Resumo
+------
+
+Criação de Classes
+------------------
+
+# Python 2
+# class base( object ):
+# 	__metaclass__ = type
+
+# Python 3
+# class base( metaclass=type ):
+# 	pass
+
+1) criação do namespace
+   namespace metaclass.__prepare__( metaklass, name, base_class_list, **kwargs )
+
+   Obs: __prepare__ precisa ser um @classmethod
+
+2) Execução do corpo da classe
+   exec( body, globals(), namespace )
+
+3) Class object é criado
+   type( name, base_class_list, namespace )
+   -> chama type.__new__ para construir classe
+   -> chama type.__init__ para customizar classe
+   Obs: type ou o 'callable' definida em __metaclass__
+
+
+Criação de instâncias
+---------------------
+
+# obj = base()
+
+1) Instanciação do objeto.
+   metaclass.__call__ será chamado
+
+   	1.1) Cria o objeto com 'base.__new__'
+	1.2) Customiza o objeto com 'base.__init__'
+
+
+
