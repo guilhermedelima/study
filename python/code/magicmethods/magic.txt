@@ -1,0 +1,173 @@
+Principais magic methods
+=======================
+
+*) Construtor / Destrutor de objetos
+	__new__( cls,[] )
+		-> Instância o objeto a ser retornado pelo construtor da classe
+		-> super().__new__( cls ) -> utiliza o __new__ da classe base object
+
+	__init__( self,[] )
+		-> Customiza objeto criado após a chamada ao método __new__
+
+	__del__( self )
+		-> Customiza destrutor do objeto
+		-> Destrutor não será chamado necessáriamente após um 'del obj'. Será chamado quando a contagem por referência
+		   for zero e o garbage collector entrar em ação
+
+
+*) Utilziar objetos como strings
+	__repr__( self )
+		-> Retorna uma string que representa o objeto em questão. É chamada pela função 'repr()'
+		-> Geralmente, apresenta informações para debug no formato '< ... some useful description ... >'.
+		-> A implementação default da classe object retorna, por exemplo, '<__class__ object at 0xFFFFFF>'
+	__str__( self )
+		-> Usada pelo método 'str()' que converte o objeto para uma string customizada.
+		-> Semelhante ao método ToString do Java.
+		-> Caso __str__ não seja implementada, o método __repr__ será utilizado por 'str()'.
+
+
+*) Comparar objetos:
+	(<)  __lt__(self, other)
+	(<=) __le__(self, other)
+	(==) __eq__(self, other)
+	(!=) __nq__(self, other)
+		-> Se não for definido, ao ser chamado, será igual a not __eq__
+	(>)  __gt__(self, other)
+	(>=) __ge__(self, other)
+	(not obj) __bool__(self)
+		-> Usado para verificar se o objeto é 'verdadeiro'
+		-> Caso não seja implementado, a função __len__ será chamada
+
+
+*) Acesso a atributos:
+	__getattribute__( self, name )
+		-> Usado apenas por classes new style
+		-> É chamado quando um atributo de um objeto é requisitado
+
+	__getattr__( self, name )
+		-> É chamado apenas quando um atributo não é encontrado no objeto
+		-> A implementação default do __getattribute__ chama o método __getattr__ quando o atributo não é encontrado
+		-> Caso __getattribute__ seja definido, o método __getattr__ será chamado apenas se o __getattribute__ explicitamente
+		   o incovar.
+	__setattr__( self, name, value )
+		-> Ao invés de realizar a atribuição através do mecanismo padrão (incluir item em __dict__), esse método é chamado.
+		-> Caso este método faça uma atribuição, o método 'object.__setattr__(self, name, value)' deve ser usado, pois uma atribuição
+		   comum 'self.name = value' dentro de __setattr__ irá resultar em uma recursividade sem fim.
+	__delattr__( self, name )
+		-> Chamado quando o atributo for removido com 'del obj.name'
+
+
+*) Descriptor Protocol
+	__get__( self, obj, obj_class )
+	__set__( self, obj, value )
+	__delete__( self, obj )
+
+
+*) Customização na criação de subclasses:
+	__init_subclass__( subcls, **kwargs )
+		-> Customiza criação de subclasses.
+		-> kwargs usado na definição da classe é utilizado neste método (Exceto 'metaclass', que é consumido antes de __init_subclass__ ser chamado).
+
+
+*) Customiza verificação de instâncias e subclasses
+	__instancecheck__( self, instance )
+	__subclasscheck__( self, subclass )
+	
+
+*) Functor
+	__call__( self,[] )
+
+
+*) Simular container
+	__len__( self )
+		-> Deve retornar o 'tamanho' do container
+		-> chamado pela função 'len()'
+	__getitem__( self, key )
+		-> método utilizado recuperar o valor de 'self[ key ]'
+		-> Se key não é do tipo correto, TypeError deve ser lançado
+		-> Para listas, quando key está fora do range de indíces válidos, IndexError deve ser lançado
+		   for loops dependem que IndexError seja lançado para identificar o fim de uma sequência
+		-> Para dicionários, quando key não está no objeto, KeyError deve ser lançado
+	__missing__( self, key )
+		-> A implementação default de 'dic.__getitem__' chama este método quando 'self[ key ]' não é encontrado
+		-> Útil para, por exemplo, inserir valores default, assim como em std::map<> do C++.
+	__setitem__( self, key, value )
+		-> método que realiza a atribuição de 'self[ key ] = value'
+	__delitem__( self, key )
+		-> método utilizado para deletar um item do container quando 'del self[ key ]' é chamado
+	__iter__( self )
+		-> Deve retornar um iterator object, capaz de iterar sobre o container
+		-> Ao invés de retornar um iterator comum, também é possível utilizar neste método a palavra "yield". Dessa forma, um generator
+		   será retornado, o qual, automaticamente, já implementa o iterator protocol.
+	__reversed__( self )
+		-> Deve retornar um iterator que percorre o container em ordem inversa.
+	__contains__( self, item )
+		-> Utilizado em 'item in container', para testar se um item está presente no container
+
+
+*) Iterator protocol
+-> Um iterator é um objeto utilizado para percorrer os itens de um container.
+-> Deve implementar os métodos:
+	__iter__( self )
+		-> Retorna o próprio objeto
+		   For loop pode ser utilizado com containers (Retorna um novo iterator), ou com um iterator existente.
+	__next__( self )
+		-> Retorna próximo elemento da sequência e é chamado pela função 'next()'. (Em python2 deve ser implementado o métod 'next(self)')
+		-> Ao fim da sequência, um StopIteration deve ser lançado
+
+
+*) Operações matemáticas
+	(+)  __add__(self, other)
+	(-)  __sub__(self, other)
+	(*)  __mul__(self, other)
+	(@)  __matmul__(self,other)
+		-> Multiplicação de matrizes.
+	(/)  __truediv__(self, other)
+		-> Divisão real. Ex. 1/2 = 0.5
+		-> Em python2 __truediv__ retorna divisão truncada
+	(//) __floordiv__(self, other)
+		-> Divisão truncada. Ex. 1/2 = 0
+	(%)  __mod__(self, other)
+		-> Operador % em strings é utilizado para formatar no estilo 'printf'
+	     __divmod__(self, other)
+		-> Retorna uma tupla com quociente e resto ( self//other, self%other )
+	(**) __pow__( self, other[, module] )
+		-> Retorna self**other
+		-> Terceiro argumento pode ser passado para calcular modpow (Mais eficiente que '(self**other) % module').
+	(<<) __lshift__(self, other)
+	(>>) __rshift__(self, other)
+	(&)  __and__(self, other)
+	(^)  __xor__(self, other)
+	(|)  __or__(self, other)
+
+-> Quando a classe não implementa estes operadores, NotImplemented é lançado
+-> Quando uma operação é requisitada e o respectivo operador não é implementado, o mesmo operador com prefixo iniciado em 'r' é chamado.
+   E.x.:
+   a + b 
+   	-> a e b são de tipos diferentes
+   	-> operador type(a).__add__ não é implementado
+	-> operador b.__radd__(a) é chamado, caso exista.
+
+-> Para operações matemáticas que são seguidas por evaluação (E.x. a += b), são utilizados os mesmos operadores citados acima, porém com prefixo i:
+   E.x.:
+   (+=) __iadd__(self, other
+   
+   
+*) Context Manager
+-> Protocolo para aquisição e liberação de recursos, utilizando a diretiva 'with'
+-> Útil para uso de arquivos (classe file padrão implementa context manager), sockets, etc.
+-> Necessário implementar:
+
+	__enter__( self )
+		-> Inicializa o recurso e retorna o objeto context manager
+	__exit__( self, excp_class, excp_obj, traceback )
+		-> Finaliza o recurso
+		-> Quando não há exceções, os três últimos parâmetros são None
+		-> Caso uma exceção tenha sido lançada dentro do block 'with', exit é chamado e as exceções são relançadas caso não seja
+		   retornado true
+
+-> contextlib.contextmanager pode ser usado como decorator de uma função que retorna um generator. Dessa forma, será criado um objeto context manager
+   onde:
+	-> a função deve chamar yield apenas uma vez
+	-> todo código antes de yield será equivalente a __enter__
+	-> todo código depois de yield será quivalente a __exit__
