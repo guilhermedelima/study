@@ -1,0 +1,11 @@
+[user]
+	name = Guilherme de Lima
+	email = guilhermedelima@gmail.com
+[merge]
+	tool = meld
+[alias]
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+[core]
+	editor = vim
+[credential]
+	helper = cache --timeout=86400
